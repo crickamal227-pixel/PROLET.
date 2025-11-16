@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Prolet{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <h1 class="logo">Prolet</h1>
+        
+        <!-- ✅ SIMPLE TOGGLE (WORKS 100%) -->
+        <label style="display: flex; align-items: center; gap: 8px; color: white; font-size: 0.9rem;">
+          <input type="checkbox" id="darkModeToggle">
+          <span style="font-size: 1.2rem;">🌓</span>
+          <span>Light/Dark theme </span>
+        </label>
+      </div>
+      
+      <nav>
+        <ul>
+          <li><a href="{{ url_for('home') }}">Home</a></li>
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+          <li><a href="{{ url_for('chatbot') }}">Chatbot</a></li>
+          <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- PDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <!-- ✅ SIMPLE DARK MODE SCRIPT -->
+  <script>
+    // Wait for page to load
+    window.addEventListener('load', () => {
+      const toggle = document.getElementById('darkModeToggle');
+      
+      // Load saved theme
+      if (localStorage.getItem('prolet_theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggle.checked = true;
+      }
+      
+      // Toggle theme
+      toggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('prolet_theme', 
+          document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+        );
+      });
+    });
+  </script>
+</body>
+</html>

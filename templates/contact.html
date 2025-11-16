@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Contact - Prolet{% endblock %}
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; background: #f8f9fa; padding: 20px;">
+  <div style="background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; max-width: 600px;">
+
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <h2 style="color: #2c3e50; margin-bottom: 0.5rem;">Get in Touch</h2>
+      <p style="color: #6c757d; font-size: 1rem; line-height: 1.6;">
+        We’d love to hear from you. Whether you have questions, feedback, or need support — reach out!
+      </p>
+    </div>
+
+    <!-- Contact Info Section -->
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+
+      <h3 style="color: #2c3e50; margin-bottom: 1rem; text-align: center;">Contact Information</h3>
+
+      <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+
+        <!-- Email -->
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <strong style="color: #2c3e50; min-width: 60px;">Email:</strong>
+          <a href="mailto:support@prolet.ai" style="color: #4a6fa5; text-decoration: none; font-weight: 500;">
+            support@prolet.ai
+          </a>
+        </div>
+
+        <!-- Phone -->
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <strong style="color: #2c3e50; min-width: 60px;">Phone:</strong>
+          <a href="tel:+15551234567" style="color: #6c757d; text-decoration: none;">
+            +1 (555) 123-4567
+          </a>
+        </div>
+
+        <!-- Address -->
+        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+          <strong style="color: #2c3e50; min-width: 60px;">Address:</strong>
+          <span style="color: #6c757d; line-height: 1.6;">
+            123 Business Ave, Suite 456, San Francisco, CA 94107
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

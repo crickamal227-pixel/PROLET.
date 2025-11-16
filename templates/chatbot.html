@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Chatbot - Prolet{% endblock %}
+{% block content %}
+<!-- ✅ CHECK LOGIN STATUS & SHOW WELCOME MESSAGE -->
+<div id="userWelcome" style="text-align: center; margin: 1rem 0; font-weight: 600; color: #2c3e50; font-size: 1.1rem;"></div>
+
+<div class="tone-selector">
+  <label><input type="radio" name="tone" value="auto" checked> Auto</label>
+  <label><input type="radio" name="tone" value="formal"> Formal</label>
+  <label><input type="radio" name="tone" value="informal"> Informal</label>
+</div>
+
+<div class="chat-input">
+  <input type="text" id="userInput" placeholder="Describe your letter needs..." />
+  <button onclick="generateLetter()" style="background: #4a6fa5; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; transition: background 0.3s;">
+  Generate Letter
+</button>
+  <button id="regenerateBtn" onclick="regenerateLetter()" style="display: none; background: #6c5ce7; color: white; padding: 0.75rem; border: none; border-radius: 6px; cursor: pointer; margin-left: 0.5rem;">
+    🔄 Regenerate
+  </button>
+</div>  
+
+<div id="letterOutput">
+  <!-- Hidden printable version for PDF -->
+  <div id="printableLetter" style="display: none; padding: 40px; width: 210mm; font-family: 'Georgia', serif; line-height: 1.6; font-size: 12pt; color: #000;">
+    <pre id="printableContent"></pre>
+  </div>
+
+  <!-- Visible letter display -->
+  <div class="letter-container">
+    <div id="letterContent">Your letter will appear here...</div>
+  </div>
+
+  <!-- Email section -->
+  <div id="emailSection" style="text-align: center; margin: 1rem 0; display: none;">
+    <input type="email" id="emailInput" placeholder="Enter recipient email"
+           style="padding: 8px; width: 250px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    <button onclick="sendEmail()"
+            style="padding: 8px 12px; background: #4a6fa5; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      📧 Send Email
+    </button>
+  </div>
+
+  <!-- Action buttons -->
+  <div id="letterActions">
+    <button id="copyBtn" onclick="copyLetter()" title="Copy to clipboard">📋</button>
+    <button onclick="downloadPDF()" title="Download as PDF">📄</button>
+    <button onclick="saveDraft()" title="Save Draft">💾</button>
+    <button id="printBtn" onclick="window.print()" title="Print letter">🖨️</button>
+  </div>
+</div>
+
+<script>
+// ✅ CHECK LOGIN STATUS
+(function() {
+  if (localStorage.getItem('prolet_logged_in') !== 'true') {
+    alert("⚠️ Please log in to use the chatbot.");
+    window.location.href = "/login";
+    return;
+  }
+  const user = JSON.parse(localStorage.getItem('prolet_user') || '{}');
+  document.getElementById('userWelcome').textContent = `Welcome, ${user.first_name || 'User'}!`;
+})();
+
+// ✅ MEMORY FOR REGENERATE
+let lastPrompt = null;
+
+// ✅ COPY FUNCTION
+function copyLetter() {
+  const letterElement = document.getElementById('letterContent');
+  if (!letterElement) {
+    alert("❌ Letter not found!");
+    return;
+  }
+  const text = letterElement.textContent;
+  if (!text || text.includes("Your letter will appear")) {
+    alert("⚠️ Please generate a letter first.");
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    document.getElementById('copyBtn').innerHTML = "✅";
+    setTimeout(() => document.getElementById('copyBtn').innerHTML = "📋", 1500);
+  }).catch(() => fallbackCopy(text));
+}
+
+function fallbackCopy(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+  document.getElementById('copyBtn').innerHTML = "✅";
+  setTimeout(() => document.getElementById('copyBtn').innerHTML = "📋", 1500);
+}
+
+// ✅ DOWNLOAD PDF
+async function downloadPDF() {
+  const letterText = document.getElementById('letterContent').textContent;
+  if (!letterText || letterText.trim() === "Your letter will appear here..." || letterText.includes("Generating")) {
+    alert("Please generate a letter first.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+
+  pdf.setFont('Georgia', 'normal');
+  pdf.setFontSize(12);
+  pdf.setTextColor(0, 0, 0);
+
+  const leftMargin = 20;
+  const topMargin = 20;
+  const pageWidth = 170;
+  let y = topMargin;
+
+  // Header
+  pdf.setFontSize(14);
+  pdf.setFont('Georgia', 'bold');
+  pdf.text("Prolet Letter", leftMargin, y);
+  y += 10;
+  pdf.setFont('Georgia', 'normal');
+  pdf.setFontSize(12);
+
+  const paragraphs = letterText.split('\n');
+  for (const paragraph of paragraphs) {
+    if (y > 280) {
+      pdf.addPage();
+      y = topMargin;
+    }
+    if (paragraph.trim() === "") {
+      y += 6;
+      continue;
+    }
+    const wrappedLines = pdf.splitTextToSize(paragraph, pageWidth);
+    for (const line of wrappedLines) {
+      if (y > 280) {
+        pdf.addPage();
+        y = topMargin;
+      }
+      pdf.text(line, leftMargin, y);
+      y += 7;
+    }
+    y += 4;
+  }
+  pdf.save('prolet_letter.pdf');
+}
+
+// ✅ GENERATE LETTER (WITH MEMORY)
+async function generateLetter() {
+  const msg = document.getElementById('userInput').value.trim();
+  if (!msg) { 
+    alert("Please describe your letter needs."); 
+    return; 
+  }
+  const tone = document.querySelector('input[name="tone"]:checked').value;
+  
+  // Save prompt for regenerate
+  lastPrompt = { message: msg, tone: tone };
+
+  document.getElementById('letterContent').textContent = "Generating your letter...";
+  document.getElementById('letterOutput').style.display = "block";
+  document.getElementById('regenerateBtn').style.display = "none";
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lastPrompt)
+    });
+    const data = await res.json();
+    if (data.reply) {
+      document.getElementById('letterContent').textContent = data.reply;
+      document.getElementById('letterActions').style.display = "flex";
+      document.getElementById('emailSection').style.display = "block";
+      document.getElementById('regenerateBtn').style.display = "inline-block";
+    } else {
+      document.getElementById('letterContent').textContent = "Sorry, I couldn't generate a letter.";
+    }
+  } catch (err) {
+    document.getElementById('letterContent').textContent = "Connection error.";
+  }
+}
+
+// ✅ REGENERATE LETTER
+async function regenerateLetter() {
+  if (!lastPrompt) {
+    alert("No letter to regenerate. Please generate one first.");
+    return;
+  }
+
+  document.getElementById('letterContent').textContent = "Regenerating your letter...";
+  document.getElementById('regenerateBtn').style.display = "none";
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lastPrompt)
+    });
+    const data = await res.json();
+    if (data.reply) {
+      document.getElementById('letterContent').textContent = data.reply;
+      document.getElementById('regenerateBtn').style.display = "inline-block";
+    } else {
+      document.getElementById('letterContent').textContent = "Sorry, I couldn't regenerate the letter.";
+    }
+  } catch (err) {
+    document.getElementById('letterContent').textContent = "Connection error.";
+  }
+}
+
+// ✅ SEND EMAIL
+async function sendEmail() {
+  const email = document.getElementById('emailInput').value.trim();
+  const letter = document.getElementById('letterContent').textContent;
+  if (!email) { 
+    alert("Please enter a recipient email."); 
+    return; 
+  }
+  if (!letter || letter.includes("Your letter will appear")) {
+    alert("Please generate a letter first.");
+    return;
+  }
+  try {
+    const res = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: email, letter: letter })
+    });
+    const data = await res.json();
+    alert(data.success ? "✅ Email sent!" : "❌ " + (data.error || "Failed."));
+  } catch (err) {
+    alert("Failed to connect to server.");
+  }
+}
+
+// ✅ SAVE DRAFT
+function saveDraft() {
+  const letter = document.getElementById('letterContent').textContent;
+  if (!letter || letter.includes("Your letter will appear")) {
+    alert("⚠️ Please generate a letter first.");
+    return;
+  }
+  const title = prompt("Draft title:", "My Letter");
+  if (!title) return;
+  
+  const drafts = JSON.parse(localStorage.getItem('prolet_drafts') || '[]');
+  drafts.push({ title, content: letter, date: new Date().toISOString() });
+  localStorage.setItem('prolet_drafts', JSON.stringify(drafts));
+  alert("✅ Draft saved to your browser!");
+}
+</script>
+{% endblock %}

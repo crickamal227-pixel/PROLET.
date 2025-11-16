@@ -159,42 +159,44 @@ Use realistic names/addresses. Never use placeholders.
 @app.route('/api/send-email', methods=['POST'])
 def send_email():
     try:
-        # 1. Get data from frontend
         data = request.json
         letter = data.get("letter", "").strip()
         recipient = data.get("to", "").strip()
 
-        # 2. Validate input
         if not letter or not recipient:
             return jsonify({"error": "Letter and recipient email are required"}), 400
 
-        # 3. Get your email credentials from .env
         sender_email = os.getenv("MAIL_USERNAME")
         sender_password = os.getenv("MAIL_APP_PASSWORD")
 
         if not sender_email or not sender_password:
             return jsonify({"error": "Email not configured. Check .env file."}), 500
 
-        # 4. Create the email message
+        # Validate email format
+        import re
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", recipient):
+            return jsonify({"error": "Invalid email address"}), 400
+
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = recipient
         msg['Subject'] = "Your Prolet Letter"
-        msg.attach(MIMEText(letter, 'plain'))  # Send as plain text
+        msg.attach(MIMEText(letter, 'plain'))
 
-        # 5. Connect to Gmail and send
+        print(f"📧 Sending email to: {recipient}")
+        print(f"📧 From: {sender_email}")
+
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()  # Secure the connection
-            server.login(sender_email, sender_password)  # Log in
-            server.send_message(msg)  # Send the email
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
 
-        # 6. Success!
         return jsonify({"success": "Email sent successfully!"})
 
     except Exception as e:
-        # 7. If anything fails, log error and return message
-        print("📧 Email error:", str(e))
-        return jsonify({"error": "Failed to send email. Please try again."}), 500  
+        # ✅ LOG THE EXACT ERROR
+        print("❌ Email error:", str(e))
+        return jsonify({"error": f"Email failed: {str(e)}"}), 500
 @app.route('/api/analyze-letter', methods=['POST'])
 def analyze_letter():
     try:

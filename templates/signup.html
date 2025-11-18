@@ -18,8 +18,8 @@
       <p style="color: #6c757d; font-size: 0.95rem;">Join Prolet and start your letter journey.</p>
     </div>
 
-    <!-- ✅ FORM (NO method="POST", uses JS only) -->
-    <form id="signupForm" onsubmit="event.preventDefault(); saveUser()" style="display: flex; flex-direction: column; gap: 1.2rem;">
+
+    <form method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
 
       <!-- First & Last Name -->
       <div style="display: flex; gap: 1rem;">
@@ -158,30 +158,5 @@
   </div>
 </div>
 
-<!-- ✅ SIGNUP SCRIPT - SAVES TO BROWSER -->
-<script>
-function saveUser() {
-  // Validate confirm password
-  const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirm_password').value;
-  if (password !== confirmPassword) {
-    alert("Passwords do not match!");
-    return;
-  }
 
-  // Collect all form data
-  const formData = new FormData(document.getElementById('signupForm'));
-  const user = {};
-  for (let [key, value] of formData.entries()) {
-    user[key] = value;
-  }
-
-  // Save to browser's localStorage
-  localStorage.setItem('prolet_user', JSON.stringify(user));
-  localStorage.setItem('prolet_logged_in', 'true');
-  
-  alert("✅ Account created! Redirecting to Chatbot...");
-  window.location.href = "/chatbot";
-}
-</script>
 {% endblock %}

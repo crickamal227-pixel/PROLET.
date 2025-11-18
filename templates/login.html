@@ -9,7 +9,7 @@
       <p style="color: #6c757d; font-size: 0.95rem;">Sign in to continue</p>
     </div>
 
-    <form id="loginForm" style="display: flex; flex-direction: column; gap: 1.2rem;">
+   <form method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
       <div>
         <label for="email" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Email</label>
         <input 
@@ -54,25 +54,4 @@
   </div>
 </div>
 
-<!-- ✅ LOGIN SCRIPT - CHECKS BROWSER STORAGE -->
-<script>
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  
-  // Get saved user from browser
-  const savedUser = JSON.parse(localStorage.getItem('prolet_user') || '{}');
-  
-  // Check if email and password match
-  if (savedUser.email === email && savedUser.password === password) {
-    localStorage.setItem('prolet_logged_in', 'true');
-    alert("✅ Login successful! Redirecting to Chatbot...");
-    window.location.href = "/chatbot";
-  } else {
-    alert("❌ No account found or password incorrect. Please sign up first.");
-  }
-});
-</script>
 {% endblock %}

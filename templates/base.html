@@ -22,11 +22,16 @@
       
       <nav>
         <ul>
-          <li><a href="{{ url_for('home') }}">Home</a></li>
-          <li><a href="{{ url_for('login') }}">Login</a></li>
-          <li><a href="{{ url_for('chatbot') }}">Chatbot</a></li>
-          <li><a href="{{ url_for('contact') }}">Contact</a></li>
-        </ul>
+  <li><a href="{{ url_for('home') }}">Home</a></li>
+  {% if session.user_email %}
+    <li><a href="{{ url_for('chatbot') }}">Chatbot</a></li>
+    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+  {% else %}
+    <li><a href="{{ url_for('login') }}">Login</a></li>
+    <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+  {% endif %}
+  <li><a href="{{ url_for('contact') }}">Contact</a></li>
+</ul>
       </nav>
     </div>
   </header>

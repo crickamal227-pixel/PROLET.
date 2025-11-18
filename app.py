@@ -1,5 +1,10 @@
-from flask import Flask, render_template, request, jsonify
+import csv
+from flask import Flask, redirect, render_template, request, jsonify, url_for
 from dotenv import load_dotenv
+import csv
+import hashlib
+import secrets
+from flask import session
 import os
 import smtplib
 from email.mime.text import MIMEText
@@ -17,6 +22,7 @@ print("🔑 API KEY preview:", os.getenv("GEMINI_API_KEY")[:10] + "..." if os.ge
 configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)  # For sessions
 model = GenerativeModel("gemini-2.0-flash")
 print("✅ Using model:", model.model_name)
 
@@ -24,20 +30,61 @@ print("✅ Using model:", model.model_name)
 def home():
     return render_template('home.html')
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        print(f"🔍 Trying to login as: {email}")
+        
+        user = get_user_from_csv(email)
+        if not user:
+            print("❌ User not found")
+            return "Email not found. <a href='/signup'>Sign Up</a>", 401
+            
+        print("✅ User found:", user['email'])
+        if verify_password(password, user['password_hash']):
+            session['user_email'] = email
+            print("✅ Login successful!")
+            return redirect(url_for('chatbot'))
+        else:
+            print("❌ Password incorrect")
+            return "Invalid credentials. <a href='/login'>Try again</a>", 401
     return render_template('login.html')
 
 @app.route('/chatbot')
 def chatbot():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
     return render_template('chatbot.html')
 
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
 
-@app.route('/signup')
+@app.route('/logout')
+def logout():
+    session.pop('user_email', None)
+    return redirect(url_for('home'))
+
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        first_name = request.form.get('first_name', '')
+        last_name = request.form.get('last_name', '')
+        phone = request.form.get('phone', '')
+        age = request.form.get('age', '')
+        gender = request.form.get('gender', '')
+
+        # Check if email already exists
+        if get_user_from_csv(email):
+            return "Email already exists. <a href='/login'>Log In</a>", 400
+
+        # Add user to CSV
+        add_user_to_csv(email, password, first_name, last_name, phone, age, gender)
+        return redirect(url_for('login'))
     return render_template('signup.html')
 
 @app.route('/api/chat', methods=['POST'])
@@ -244,7 +291,38 @@ Suggestions:
     except Exception as e:
         print("🔤 Error in analyze-letter:", str(e))
         return jsonify({"error": "Failed to analyze letter. Please try again."}), 500
-   
+
+def hash_password(password):
+    salt = secrets.token_hex(32)
+    pwd_hash = hashlib.sha256((password + salt).encode()).hexdigest()
+    return f"{salt}${pwd_hash}"
+
+def verify_password(password, stored_hash):
+    salt, pwd_hash = stored_hash.split('$', 1)
+    return hashlib.sha256((password + salt).encode()).hexdigest() == pwd_hash
+
+def add_user_to_csv(email, password, first_name="", last_name="", phone="", age="", gender=""):
+    # Create CSV with header if not exists
+    if not os.path.exists('users.csv'):
+        with open('users.csv', 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['email', 'password_hash', 'first_name', 'last_name', 'phone', 'age', 'gender'])
+    
+    # Append new user
+    with open('users.csv', 'a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow([email, hash_password(password), first_name, last_name, phone, age, gender])
+
+def get_user_from_csv(email):
+    if not os.path.exists('users.csv'):
+        return None
+    with open('users.csv', 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row['email'] == email:
+                return row
+    return None
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)

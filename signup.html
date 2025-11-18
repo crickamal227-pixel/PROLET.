@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Sign Up - Prolet{% endblock %}
+{% block content %}
+<div style="background: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;">
+  <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; max-width: 550px;">
+
+    <!-- Header Banner -->
+    <div style="background: #f8f9fa; padding: 0.75rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem; color: #2c3e50; display: flex; align-items: center; gap: 0.5rem;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 1a2 2 0 0 0-2 2v2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2z"/>
+      </svg>
+      Your personal information is protected with encryption
+    </div>
+
+    <!-- Title -->
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <h2 style="color: #2c3e50; margin-bottom: 0.5rem;">Create Your Account</h2>
+      <p style="color: #6c757d; font-size: 0.95rem;">Join Prolet and start your letter journey.</p>
+    </div>
+
+
+    <form method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
+
+      <!-- First & Last Name -->
+      <div style="display: flex; gap: 1rem;">
+        <div style="flex: 1;">
+          <label for="first_name" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">First Name</label>
+          <input 
+            type="text" 
+            name="first_name" 
+            id="first_name"
+            placeholder="John" 
+            required
+            style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+          >
+        </div>
+        <div style="flex: 1;">
+          <label for="last_name" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Last Name</label>
+          <input 
+            type="text" 
+            name="last_name" 
+            id="last_name"
+            placeholder="Doe" 
+            required
+            style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+          >
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label for="email" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Email Address</label>
+        <input 
+          type="email" 
+          name="email" 
+          id="email"
+          placeholder="john.doe@example.com" 
+          required
+          style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+        >
+      </div>
+
+      <!-- Phone -->
+      <div>
+        <label for="phone" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Phone Number</label>
+        <input 
+          type="tel" 
+          name="phone" 
+          id="phone"
+          placeholder="+1 (555) 000-0000" 
+          style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+        >
+      </div>
+
+      <!-- Age & Gender -->
+      <div style="display: flex; gap: 1rem;">
+        <div style="flex: 1;">
+          <label for="age" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Age</label>
+          <input 
+            type="number" 
+            name="age" 
+            id="age"
+            min="7" max="120"
+            placeholder="AGE" 
+            style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+          >
+        </div>
+        <div style="flex: 1;">
+          <label for="gender" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Gender</label>
+          <select 
+            name="gender" 
+            id="gender"
+            style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+          >
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+            <option value="prefer_not_to_say">Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label for="password" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Password</label>
+        <input 
+          type="password" 
+          name="password" 
+          id="password"
+          placeholder="Create a strong password" 
+          required
+          style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+        >
+      </div>
+
+      <!-- Confirm Password -->
+      <div>
+        <label for="confirm_password" style="display: block; margin-bottom: 0.5rem; color: #2c3e50; font-size: 0.95rem;">Confirm Password</label>
+        <input 
+          type="password" 
+          name="confirm_password" 
+          id="confirm_password"
+          placeholder="Re-enter your password" 
+          required
+          style="width: 100%; padding: 0.85rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;"
+        >
+      </div>
+
+      <!-- Terms Checkbox -->
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" name="agree_terms" id="agree_terms" required>
+        <label for="agree_terms" style="font-size: 0.95rem; color: #2c3e50;">
+          I agree to the <a href="#" style="color: #4a6fa5; text-decoration: none;">Terms of Service</a> and <a href="#" style="color: #4a6fa5; text-decoration: none;">Privacy Policy</a>
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit"
+        style="background: #6c5ce7; color: white; padding: 0.85rem; border: none; border-radius: 30px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s;"
+      >
+        Create Account
+      </button>
+
+      <!-- Login Link -->
+      <div style="text-align: center; margin-top: 1.2rem; font-size: 0.95rem;">
+        <p style="color: #6c757d;">
+          Already have an account? 
+          <a href="{{ url_for('login') }}" style="color: #4a6fa5; text-decoration: none; font-weight: 500;">
+            Log In
+          </a>
+        </p>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+{% endblock %}

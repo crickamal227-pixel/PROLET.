@@ -51,17 +51,25 @@
 </div>
 
 <script>
-// ✅ CHECK LOGIN STATUS
+// ✅ CHECK LOGIN STATUS (Server-Side)
 (function() {
-  if (localStorage.getItem('prolet_logged_in') !== 'true') {
+  // Jinja2 renders this on the server
+  const userEmail = "{{ session.user_email }}";
+  if (!userEmail || userEmail === "None") {
     alert("⚠️ Please log in to use the chatbot.");
     window.location.href = "/login";
     return;
   }
-  const user = JSON.parse(localStorage.getItem('prolet_user') || '{}');
-  document.getElementById('userWelcome').textContent = `Welcome, ${user.first_name || 'User'}!`;
+  // Get first name from server (via Jinja2)
+const firstName = "{{ session.first_name }}";
+if (firstName && firstName !== "None") {
+  document.getElementById('userWelcome').textContent = `Welcome, ${firstName}!`;
+} else {
+  // Fallback: Show email if no first name
+  const userEmail = "{{ session.user_email }}";
+  document.getElementById('userWelcome').textContent = `Welcome, ${userEmail}!`;
+}
 })();
-
 // ✅ MEMORY FOR REGENERATE
 let lastPrompt = null;
 

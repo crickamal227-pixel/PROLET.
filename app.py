@@ -221,6 +221,7 @@ def send_email():
         sender_password = os.getenv("MAIL_APP_PASSWORD")
 
         if not sender_email or not sender_password:
+            print("❌ Missing email credentials in .env")
             return jsonify({"error": "Email not configured. Check .env file."}), 500
 
         # Validate email format
@@ -239,15 +240,24 @@ def send_email():
 
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
+            print("🔒 Starting TLS...")
             server.login(sender_email, sender_password)
+            print("✅ Logged in to Gmail")
             server.send_message(msg)
+            print("📤 Email sent successfully!")
 
         return jsonify({"success": "Email sent successfully!"})
 
+    except smtplib.SMTPAuthenticationError as e:
+        print("❌ Gmail Auth Error:", str(e))
+        return jsonify({"error": "Invalid email or app password. Check .env file."}), 500
+    except smtplib.SMTPRecipientsRefused as e:
+        print("❌ Recipient Rejected:", str(e))
+        return jsonify({"error": "Recipient email invalid or blocked."}), 400
     except Exception as e:
-        # ✅ LOG THE EXACT ERROR
         print("❌ Email error:", str(e))
         return jsonify({"error": f"Email failed: {str(e)}"}), 500
+    
 @app.route('/api/analyze-letter', methods=['POST'])
 def analyze_letter():
     try:

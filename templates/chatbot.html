@@ -32,14 +32,23 @@
   </div>
 
   <!-- Email section -->
-  <div id="emailSection" style="text-align: center; margin: 1rem 0; display: none;">
-    <input type="email" id="emailInput" placeholder="Enter recipient email"
-           style="padding: 8px; width: 250px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px;">
-    <button onclick="sendEmail()"
-            style="padding: 8px 12px; background: #4a6fa5; color: white; border: none; border-radius: 4px; cursor: pointer;">
-      📧 Send Email
-    </button>
-  </div>
+  <div id="emailSection" style="text-align: center; margin: 1.5rem 0; display: none;">
+  <input type="email" id="emailInput" placeholder="Enter recipient email"
+         style="padding: 8px; width: 250px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px;">
+
+  <button onclick="sendEmail()"
+          style="padding: 8px 12px; background: #4a6fa5; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+    📧 Send Email
+  </button>
+
+  <style>
+  #emailSection button:hover {
+    background: #2c3e50;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  </style>
+</div>
 
   <!-- Action buttons -->
   <div id="letterActions">
@@ -218,18 +227,27 @@ async function regenerateLetter() {
   }
 }
 
-// ✅ SEND EMAIL
 async function sendEmail() {
   const email = document.getElementById('emailInput').value.trim();
   const letter = document.getElementById('letterContent').textContent;
-  if (!email) { 
-    alert("Please enter a recipient email."); 
-    return; 
+  const button = document.querySelector('#emailSection button');
+
+  if (!email) {
+    alert("Please enter a recipient email.");
+    return;
   }
   if (!letter || letter.includes("Your letter will appear")) {
     alert("Please generate a letter first.");
     return;
   }
+
+  // ✅ SHOW LOADING STATE
+  const originalText = button.innerHTML;
+  button.innerHTML = "📧 Sending...";
+  button.disabled = true;
+  button.style.opacity = "0.8";
+  button.style.cursor = "not-allowed";
+
   try {
     const res = await fetch('/api/send-email', {
       method: 'POST',
@@ -237,8 +255,33 @@ async function sendEmail() {
       body: JSON.stringify({ to: email, letter: letter })
     });
     const data = await res.json();
-    alert(data.success ? "✅ Email sent!" : "❌ " + (data.error || "Failed."));
+    
+    if (data.success) {
+      button.innerHTML = "✅ Sent!";
+      setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        button.style.opacity = "1";
+        button.style.cursor = "pointer";
+      }, 2000);
+    } else {
+      button.innerHTML = "❌ Failed";
+      setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        button.style.opacity = "1";
+        button.style.cursor = "pointer";
+      }, 2000);
+      alert("❌ " + (data.error || "Failed to send email."));
+    }
   } catch (err) {
+    button.innerHTML = "❌ Error";
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.disabled = false;
+      button.style.opacity = "1";
+      button.style.cursor = "pointer";
+    }, 2000);
     alert("Failed to connect to server.");
   }
 }

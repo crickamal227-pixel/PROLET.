@@ -35,21 +35,17 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        print(f"🔍 Trying to login as: {email}")
-        
         user = get_user_from_csv(email)
+        
         if not user:
-            print("❌ User not found")
             return "Email not found. <a href='/signup'>Sign Up</a>", 401
             
-        print("✅ User found:", user['email'])
         if verify_password(password, user['password_hash']):
+            # Save email AND first name in session
             session['user_email'] = email
-            print("✅ Login successful!")
+            session['first_name'] = user.get('first_name', '')  # ← Add this line
             return redirect(url_for('chatbot'))
-        else:
-            print("❌ Password incorrect")
-            return "Invalid credentials. <a href='/login'>Try again</a>", 401
+        return "Invalid credentials. <a href='/login'>Try again</a>", 401
     return render_template('login.html')
 
 @app.route('/chatbot')
@@ -104,6 +100,10 @@ You are Prolet, a professional letter-writing assistant.
 
 Respond in the **same language** as the user's request.
 
+If user did not specify a language, default to English.
+
+If user mention their details (name, address, etc.) use them in the letter otherwise don't invent details.
+
 Write a complete formal business letter using this exact structure:
 
 [Your Full Name]
@@ -133,6 +133,8 @@ Use realistic example names/addresses. Never use placeholders.
 You are Prolet, a friendly letter-writing assistant.
 
 Respond in the **same language** as the user's request.
+If user did not specify a language, default to English.
+If user mention their details (name, address, etc.) use them in the letter otherwise don't invent details.
 
 Write a complete informal letter using this structure:
 
@@ -152,6 +154,8 @@ Use realistic names. Never use placeholders like [Name].
 You are Prolet, a letter-writing assistant.
 
 Respond in the **same language** as the user's request.
+If user did not specify a language, default to English.
+If user mention their details (name, address, etc.) use them in the letter otherwise don't invent details.
 
 Automatically decide if the letter should be formal or informal based on the request.
 

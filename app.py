@@ -23,7 +23,7 @@ configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)  # For sessions
-model = GenerativeModel("gemini-2.0-flash")
+model = GenerativeModel("gemini-2.5-flash")
 print("✅ Using model:", model.model_name)
 
 @app.route('/')
